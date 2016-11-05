@@ -1,0 +1,33 @@
+[  
+  {
+    "type": "database-driver",
+    "key": "mongo",
+    "value": {
+      "classpath": "com.codesunday.ceres.driver.mongo.MongoDriver"
+    }
+  },
+  {
+    "type": "database-instance",
+    "key": "sakila_uat_instance",
+    "value": {
+      "uri": "mongodb://localhost:27017",
+      "database": "sakila_uat"
+    }
+  },
+  {
+    "type": "database-instance",
+    "key": "sakila_pro_instance",
+    "value": {
+      "uri": "mongodb://localhost:27017",
+      "database": "sakila_pro"
+    }
+  },
+  {
+    "type": "logging",
+    "key": "log-properties",
+    "value": {
+      "number-of-constants-to-show": 2,
+      "format": "text"
+    }
+  }
+]

@@ -1,0 +1,65 @@
+[
+  {
+    "NOTE": "EXAMPLE DUMMY PROPERTY FOR ILLUSTRATION",
+    "type": "type attribute is to organize the properties, by grouping related properties as a set",
+    "key": "key attribute will uniquely identify the property within the type. Should be unique within the same type properties",
+    "value": {
+      "key1": "A single key can have a set of key value pairs within it",
+      "key2": "some value"
+    },
+    "comments": [
+      "In this example context file, properties expected by the framework are explained"
+    ]
+  },
+  
+  
+  {
+    "type": "database-driver",
+    "key": "mongo",
+    "value": {
+      "classpath": "com.codesunday.ceres.driver.mongo.MongoDriver"
+    },
+    "comments": [
+      "This is fixed for mongo db. When you write driver for other databases, you need to create a property pointing to that classpath",
+      "Property type should always be database-driver for all databases drivers",
+      "Key should be unique to the driver being defined"
+    ]
+  },
+  {
+    "type": "database-instance",
+    "key": "sakila_uat_instance",
+    "value": {
+      "uri": "mongodb://localhost:27017",
+      "database": "sakila_uat"
+    },
+    "comments": [
+      "Here, you specify the connection details to your database",
+      "Property type should always be database-instance for all database instances defined",
+      "Key should be unique to the database instnace being defined"
+    ]
+  },
+  {
+    "type": "database-instance",
+    "key": "sakila_pro_instance",
+    "value": {
+      "uri": "mongodb://localhost:27017",
+      "database": "sakila_pro"
+    }
+  },
+  {
+    "type": "logging",
+    "key": "log-properties",
+    "value": {
+      "number-of-constants-to-show": 2,
+      "format": "text"
+    },
+    "comments": [
+      "This is a unique property for logger behavior. Property type and key are unique and should not be changed",
+      "All logging related details required by the framework should be defined as keys in the value",
+      "Presently, two properties decide the logger behavour",
+      "format can be text or json and the response will be generated accordingly",
+      "number-of-constants-to-show will decide how many constants will be displayed in logger output while running a query. As an example, in a IN clause, program can take any number of constants to check against. But this will limit the number of values to be shown on console to avoid unnecessary details in the log",
+      "number-of-constants-to-show if not specified or if marked as a negative number, all constants will be shown in the log"
+    ]
+  }
+]

@@ -1,0 +1,48 @@
+[
+	{
+		"context": "simple",
+		"id": "single-table-query",
+		"table": "",
+		"filter-in-db": "",
+		"filter-in-memory": ""
+	},
+	{
+		"context": "simple",
+		"id": "simple-join",
+		"table": "",
+		"filter-in-db": "",
+		"filter-in-memory": ""
+	},
+	{
+		"context": "simple",
+		"id": "project-example",
+		"table": "",
+		"filter-in-db": "",
+		"filter-in-memory": "",
+		"project": [
+			"w",
+			"e"
+		]
+	},
+	{
+		"context": "simple",
+		"id": "project-using-template-example",
+		"table": "",
+		"filter-in-db": "",
+		"filter-in-memory": "",
+		"project": [
+			"project-template-001.json"
+		]
+	},
+	{
+		"context": "simple",
+		"id": "project-using-multiple-template-example",
+		"table": "",
+		"filter-in-db": "",
+		"filter-in-memory": "",
+		"project": [
+			"project-template-001.json",
+			"project-template-002.json"
+		]
+	}
+]

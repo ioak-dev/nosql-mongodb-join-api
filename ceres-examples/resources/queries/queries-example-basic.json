@@ -1,0 +1,29 @@
+[
+  {
+    "context": "basic-examples",
+    "id": "single-table",
+    "collections": "customers cust",
+    "filter-in-db": "cust.Country NOT IN {{country}}"
+  },
+  {
+    "context": "basic-examples",
+    "id": "multi-table-join",
+    "project": [
+      "b.First Name AS Customer Name",
+      "a.Title AS Film Name",
+      "a.Description AS Film Synopsis"
+    ],
+    "table": [
+      "films a",
+      "customers b"
+    ],
+    "filter-in-db": [
+      "b.First Name = TIFFANY",
+      "b.Last Name = JORDAN"
+    ],
+    "join": [
+      "b.Rentals.Film Title = a.Title",
+      "b.Rentals.filmId = a._id"
+    ]
+  }
+]

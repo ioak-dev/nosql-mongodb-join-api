@@ -1,0 +1,11 @@
+[
+	{
+		"Title": "a.Title",
+		"_view": "one.json"
+	},
+	{
+		"Title": "a.Title",
+		"Actors": "_asSet(a.Actors.First name AS First name,a.Actors.Last name AS Last name)",
+		"_view": "two.json"
+	}
+]

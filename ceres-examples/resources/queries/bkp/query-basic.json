@@ -1,0 +1,210 @@
+[
+  {
+    "id": "basic",
+    "table": "customers a",
+    "filter-in-memory": [
+      "a.Rentals.Film Title={{film_title}}"
+    ]
+  },
+  {
+    "id": "basic2",
+    "table": [
+      "stores a",
+      "customers b"
+    ],
+    "filter-in-db": "",
+    "filter-in-memory": [
+      "a.City IN {{city}}",
+      "a.Country NOT IN {{country}}"
+    ],
+    "join": [
+      "a.a1=b.b1",
+      "a.a2 = a.c2",
+      "d.c3 = f.c4"
+    ]
+  },
+  {
+    "id": "sample-query",
+    "table": [
+      "films a",
+      "customers b"
+    ],
+    "join": [
+      "b.Rentals.Film Title = a.Title",
+      "b.Rentals.filmId = a._id"
+    ]
+  },
+  {
+    "id": "test",
+    "table": [
+      "films a",
+      "customers b"
+    ],
+    "filter-in-db": [
+      "a.Actors.First name IN {{actor_first_name}}"
+    ],
+    "filter-in-memory": [
+      {
+        "operator": "OR",
+        "operand": [
+          "a.Actors.Last name IN {{actor_last_name}}",
+          "a.Actors.First name IN {{actor_first_name}}"
+        ]
+      },
+      {
+        "operator": "AND",
+        "operand": [
+          "b.Rentals.Film Title IN {{film_title}}"
+        ]
+      }
+    ],
+    "join": [
+      "b.Rentals.Film Title = a.Title",
+      "b.Rentals.filmId = a._id"
+    ]
+  },
+  {
+    "id": "test3",
+    "project": [
+      "a.category",
+      "a.Title",
+      "a.Actors.First name AS Actor First name"
+    ],
+    "table": [
+      "films a",
+      "customers b"
+    ],
+    "filter-in-db": [],
+    "filter-in-memory": [
+      {
+        "operator": "AND",
+        "operand": [
+          {
+            "operator": "OR",
+            "operand": [
+              "a.Actors.Last name IN {{actor_last_name}}",
+              "a.Actors.First name IN {{actor_first_name}}"
+            ]
+          },
+          {
+            "operator": "AND",
+            "operand": [
+              "a.Title IN {{film_title}}"
+            ]
+          }
+        ]
+      },
+      {
+        "operator": "AND",
+        "operand": [
+          "b.Rentals.Film Title IN {{film_title}}"
+        ]
+      }
+    ],
+    "join": [
+      "b.Rentals.Film Title = a.Title",
+      "b.Rentals.filmId = a._id"
+    ],
+    "drop-table-alias": "true"
+  },
+  {
+    "id": "test4",
+    "project": [
+      "one.json",
+      "two.json"
+    ],
+    "table": [
+      "films a",
+      "customers b"
+    ],
+    "filter-in-db": [],
+    "filter-in-memory": [
+      {
+        "operator": "AND",
+        "operand": [
+          {
+            "operator": "OR",
+            "operand": [
+              "a.Actors.Last name IN {{actor_last_name}}",
+              "a.Actors.First name IN {{actor_first_name}}"
+            ]
+          },
+          {
+            "operator": "AND",
+            "operand": [
+              "a.Title IN {{film_title}}"
+            ]
+          }
+        ]
+      },
+      {
+        "operator": "AND",
+        "operand": [
+          "b.Rentals.Film Title IN {{film_title}}"
+        ]
+      }
+    ],
+    "join": [
+      "b.Rentals.Film Title = a.Title",
+      "b.Rentals.filmId = a._id"
+    ],
+    "drop-table-alias": "true"
+  },
+  {
+    "id": "test5",
+    "project": [
+      "one.json",
+      "two.json"
+    ],
+    "table": [
+      "films a",
+      "customers b"
+    ],
+    "filter-in-db": [],
+    "filter-in-memory": [
+      "a.Actors.Last name IN {{actor_last_name}}",
+      {
+        "operator": "AND",
+        "operand": [
+          {
+            "operator": "OR",
+            "operand": [
+              "a.Actors.Last name IN {{actor_last_name}}",
+              "a.Actors.First name IN {{actor_first_name}}"
+            ]
+          },
+          {
+            "operator": "AND",
+            "operand": [
+              "a.Title IN {{film_title}}"
+            ]
+          }
+        ]
+      },
+      {
+        "operator": "AND",
+        "operand": [
+          "b.Rentals.Film Title IN {{film_title}}"
+        ]
+      },
+      {
+        "operator": "AND",
+        "operand": [
+          "b.Rentals.Film Title IN {{film_title}}",
+          {
+            "operator": "AND",
+            "operand": [
+              "b.Rentals.Film Title IN {{film_title}}",
+              "a.Actors.First name NOT IN {{actor_first_name}}"
+            ]
+          }
+        ]
+      }
+    ],
+    "join": [
+      "b.Rentals.Film Title = a.Title",
+      "b.Rentals.filmId = a._id"
+    ],
+    "drop-table-alias": "true"
+  }
+]
