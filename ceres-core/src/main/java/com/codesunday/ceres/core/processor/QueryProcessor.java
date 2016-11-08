@@ -27,7 +27,6 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.ppythagoras.proteus.core.client.ProteusClient;
 
 import com.codesunday.ceres.core.constants.QueryElements;
 import com.codesunday.ceres.core.domain.ApplicationContext;
@@ -40,6 +39,7 @@ import com.codesunday.ceres.core.domain.Table;
 import com.codesunday.ceres.core.domain.TransactionContext;
 import com.codesunday.ceres.core.utils.CoreUtils;
 import com.codesunday.ceres.core.utils.TextUtils;
+import com.codesunday.proteus.core.client.ProteusClient;
 
 public class QueryProcessor {
 

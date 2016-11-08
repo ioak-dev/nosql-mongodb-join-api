@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
-import org.ppythagoras.proteus.core.utils.JSONUtils;
 
 import com.codesunday.ceres.core.constants.QueryElements;
 import com.codesunday.ceres.core.domain.FilterData;
@@ -32,6 +31,7 @@ import com.codesunday.ceres.core.domain.JoinData;
 import com.codesunday.ceres.core.domain.Table;
 import com.codesunday.ceres.core.domain.TransactionContext;
 import com.codesunday.ceres.core.utils.CoreUtils;
+import com.codesunday.proteus.core.utils.JSONUtils;
 
 public class QueryOperations {
 
