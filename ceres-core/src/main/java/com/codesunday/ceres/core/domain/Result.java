@@ -146,4 +146,9 @@ public class Result {
 
 		logger.info(queryIdentifierTag + jsonToPrint.toString(3));
 	}
+
+	public Map<String, List<JSONObject>> getViews() {
+		return views;
+	}
+
 }

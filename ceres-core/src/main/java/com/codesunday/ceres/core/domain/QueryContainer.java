@@ -119,6 +119,10 @@ public class QueryContainer {
 
 	}
 
+	public Map<String, Map<String, QueryTemplate>> getAllQueries() {
+		return map;
+	}
+
 	@Override
 	public String toString() {
 		return map.toString();

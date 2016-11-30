@@ -17,15 +17,14 @@
 
 package com.codesunday.ceres.core.domain;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.codesunday.ceres.core.logging.LogCapsule;
-import com.codesunday.ceres.core.utils.FileUtils;
 
 public class ApplicationContext {
 
@@ -38,11 +37,12 @@ public class ApplicationContext {
 	private static final String VALUE = "value";
 
 	private Map<String, Map<String, JSONObject>> map = new HashMap();
+	private static Map<String, Map<String, JSONObject>> globalMap = new HashMap();
 
 	public QueryContainer queryContainer;
 	public TemplateContainer templateContainer;
 	public LogCapsule logCapsule;
-	
+
 	public int numberOfConstantsToShow = 2;
 
 	/**
@@ -50,14 +50,18 @@ public class ApplicationContext {
 	 * 
 	 * @param file
 	 */
-	private ApplicationContext(File file) {
+	private ApplicationContext(List<JSONObject> list) {
+
+		this();
+
+		append(list);
+	}
+
+	private ApplicationContext() {
 
 		this.queryContainer = new QueryContainer();
 		this.templateContainer = new TemplateContainer();
 
-		List<JSONObject> list = FileUtils.read(file);
-
-		append(list);
 	}
 
 	/**
@@ -66,10 +70,22 @@ public class ApplicationContext {
 	 * @param directoryName
 	 * @return
 	 */
-	public static ApplicationContext getInstance(String directoryName) {
-		File file = new File(directoryName);
+	public static ApplicationContext getInstance(List<JSONObject> list) {
 
-		ApplicationContext appContext = new ApplicationContext(file);
+		ApplicationContext appContext = new ApplicationContext(list);
+
+		return appContext;
+	}
+
+	/**
+	 * Static instance provider
+	 * 
+	 * @param directoryName
+	 * @return
+	 */
+	public static ApplicationContext getInstance() {
+
+		ApplicationContext appContext = new ApplicationContext();
 
 		return appContext;
 	}
@@ -79,7 +95,7 @@ public class ApplicationContext {
 	 * 
 	 * @param json
 	 */
-	private void append(JSONObject json) {
+	public void append(JSONObject json) {
 
 		if (json != null) {
 
@@ -120,10 +136,78 @@ public class ApplicationContext {
 	 * 
 	 * @param json
 	 */
-	private void append(List<JSONObject> list) {
+	public void append(List<JSONObject> list) {
 
 		for (JSONObject json : list) {
 			append(json);
+		}
+
+	}
+
+	/**
+	 * Add a list of global properties, accessible across the instance of
+	 * CeresClient
+	 * 
+	 * @param json
+	 */
+	public void append(JSONArray array) {
+
+		for (int i = 0; i < array.length(); i++) {
+			append(array.optJSONObject(i));
+		}
+
+	}
+
+	/**
+	 * Add a global property, accessible across the instance of CeresClient
+	 * 
+	 * @param json
+	 */
+	public static void appendGlobalScope(JSONObject json) {
+
+		if (json != null) {
+
+			String context = CONTEXT_DEFAULT;
+			String key = null;
+
+			if (json.has(CONTEXT)) {
+				context = json.optString(CONTEXT);
+			} else if (json.has(TYPE)) {
+				context = json.optString(TYPE);
+			}
+
+			if (json.has(KEY)) {
+				key = json.optString(KEY);
+			} else {
+				// ERROR
+			}
+
+			if (globalMap.containsKey(context)) {
+				Map<String, JSONObject> queryMap = globalMap.get(context);
+
+				queryMap.put(key, json);
+
+			} else {
+				Map<String, JSONObject> queryMap = new HashMap();
+
+				queryMap.put(key, json);
+
+				globalMap.put(context, queryMap);
+			}
+		}
+
+	}
+
+	/**
+	 * Add a list of global properties, accessible across the instance of
+	 * CeresClient
+	 * 
+	 * @param json
+	 */
+	public static void appendGlobalScope(JSONArray array) {
+
+		for (int i = 0; i < array.length(); i++) {
+			appendGlobalScope(array.optJSONObject(i));
 		}
 
 	}
@@ -141,6 +225,8 @@ public class ApplicationContext {
 
 		if (map.containsKey(context) && map.get(context).containsKey(key)) {
 			json = map.get(context).get(key).optJSONObject(VALUE);
+		} else if (globalMap.containsKey(context) && globalMap.get(context).containsKey(key)) {
+			json = globalMap.get(context).get(key).optJSONObject(VALUE);
 		}
 
 		return json;
@@ -160,6 +246,15 @@ public class ApplicationContext {
 
 		if (map.containsKey(context) && map.get(context).containsKey(key)) {
 			JSONObject json = map.get(context).get(key).optJSONObject(VALUE);
+
+			if (json.has(value)) {
+				returnValue = json.optString(value);
+			}
+
+		}
+
+		if (returnValue == null && globalMap.containsKey(context) && globalMap.get(context).containsKey(key)) {
+			JSONObject json = globalMap.get(context).get(key).optJSONObject(VALUE);
 
 			if (json.has(value)) {
 				returnValue = json.optString(value);
@@ -216,6 +311,26 @@ public class ApplicationContext {
 		}
 
 		return returnValue;
+	}
+
+	public static Map<String, Map<String, JSONObject>> getGlobalMap() {
+		return globalMap;
+	}
+
+	public static void clearGlobalMap() {
+		globalMap.clear();
+	}
+
+	public Map<String, Map<String, JSONObject>> getMap() {
+		return map;
+	}
+
+	public void clearMap() {
+		map.clear();
+	}
+
+	public Map<String, Map<String, QueryTemplate>> getQueries() {
+		return this.queryContainer.getAllQueries();
 	}
 
 	@Override

@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+
 import com.codesunday.ceres.core.constants.QueryElements;
 
 public class TextUtils {
@@ -35,6 +37,16 @@ public class TextUtils {
 
 				if (parameterValue instanceof List) {
 					List items = (List) parameterValue;
+
+					StringBuilder sb = new StringBuilder();
+
+					for (Object item : items) {
+						sb = sb.append(item).append(",");
+					}
+
+					parameterValue = sb;
+				} else if (parameterValue instanceof JSONArray) {
+					JSONArray items = (JSONArray) parameterValue;
 
 					StringBuilder sb = new StringBuilder();
 

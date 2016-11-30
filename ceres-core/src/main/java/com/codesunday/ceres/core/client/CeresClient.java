@@ -18,9 +18,11 @@
 package com.codesunday.ceres.core.client;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.codesunday.ceres.core.domain.ApplicationContext;
@@ -71,7 +73,7 @@ public class CeresClient {
 
 	public static CeresClient getInstance(String appContextPath, String dbDriver, String dbName) {
 
-		ApplicationContext applicationContext = ApplicationContext.getInstance(appContextPath);
+		ApplicationContext applicationContext = ApplicationContext.getInstance(loadPropertiesFromPath(appContextPath));
 
 		CeresClient client = new CeresClient(applicationContext, dbDriver, dbName);
 
@@ -79,11 +81,64 @@ public class CeresClient {
 
 	}
 
+	public static CeresClient getInstance(List<JSONObject> list, String dbDriver, String dbName) {
+
+		ApplicationContext applicationContext = ApplicationContext.getInstance(list);
+
+		CeresClient client = new CeresClient(applicationContext, dbDriver, dbName);
+
+		return client;
+
+	}
+
+	public static CeresClient getInstance(String dbDriver, String dbName) {
+
+		ApplicationContext applicationContext = ApplicationContext.getInstance();
+
+		CeresClient client = new CeresClient(applicationContext, dbDriver, dbName);
+
+		return client;
+
+	}
+
+	private static List<JSONObject> loadPropertiesFromPath(String appContextPath) {
+
+		File file = new File(appContextPath);
+
+		List<JSONObject> list = FileUtils.read(file);
+
+		return list;
+	}
+
 	public void addQueriesFromFilesystem(String queryPath) {
 
 		List<JSONObject> queries = readQueriesFromFileSystem(queryPath);
 
 		applicationContext.queryContainer.append(queries);
+
+	}
+
+	public void addQueries(List<JSONObject> queries) {
+
+		applicationContext.queryContainer.append(queries);
+
+	}
+
+	public void addQueries(JSONArray queries) {
+
+		List<JSONObject> list = new ArrayList();
+
+		for (int i = 0; i < queries.length(); i++) {
+			list.add(queries.optJSONObject(i));
+		}
+
+		applicationContext.queryContainer.append(list);
+
+	}
+
+	public void addQueries(JSONObject query) {
+
+		applicationContext.queryContainer.append(query);
 
 	}
 
@@ -135,6 +190,10 @@ public class CeresClient {
 		return list;
 	}
 
+	public Map<String, Map<String, QueryTemplate>> getAllQueries() {
+		return applicationContext.queryContainer.getAllQueries();
+	}
+
 	public Result find(String context, String queryid, Map<String, Object> parameters) {
 
 		QueryTemplate queryTemplate = applicationContext.queryContainer.getQueryTemplate(context, queryid);
@@ -148,4 +207,9 @@ public class CeresClient {
 		return clientImpl.find(queryTemplate, parameters);
 
 	}
+
+	public ApplicationContext getApplicationContext() {
+		return applicationContext;
+	}
+
 }
