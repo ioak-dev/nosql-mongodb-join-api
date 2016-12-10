@@ -275,13 +275,24 @@ public class ApplicationContext {
 	 */
 	public int getNumber(String context, String key, String value) {
 
-		int returnValue = 0;
+		int returnValue = -1;
 
 		if (map.containsKey(context) && map.get(context).containsKey(key)) {
 			JSONObject json = map.get(context).get(key).optJSONObject(VALUE);
 
 			if (json.has(value)) {
 				returnValue = json.optInt(value, 0);
+			}
+
+		}
+
+		if (returnValue < 0 && globalMap.containsKey(context) && globalMap.get(context).containsKey(key)) {
+			JSONObject json = globalMap.get(context).get(key).optJSONObject(VALUE);
+
+			if (json.has(value)) {
+				returnValue = json.optInt(value, 0);
+			} else{
+				returnValue = 0;
 			}
 
 		}
