@@ -440,6 +440,10 @@ public class QueryTemplate extends QueryElements {
 		return json.toString();
 	}
 
+	public JSONObject get() {
+		return json;
+	}
+
 }
 
 class KeyValuePair {
