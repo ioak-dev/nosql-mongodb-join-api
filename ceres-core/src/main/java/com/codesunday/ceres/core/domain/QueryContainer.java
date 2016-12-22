@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.constants.QueryElements;
 import com.codesunday.ceres.core.exception.CeresException;
@@ -52,7 +52,7 @@ public class QueryContainer {
 	 * 
 	 * @param json
 	 */
-	public void append(JSONObject json) {
+	public void append(ObjectNode json) {
 
 		if (json != null) {
 
@@ -60,8 +60,8 @@ public class QueryContainer {
 
 				QueryTemplate queryTemplate = new QueryTemplate(json);
 
-				String context = (String) queryTemplate.get(QueryElements.ELEMENT_CONTEXT);
-				String id = (String) queryTemplate.get(QueryElements.ELEMENT_ID);
+				String context = queryTemplate.get(QueryElements.ELEMENT_CONTEXT).getTextValue();
+				String id = queryTemplate.get(QueryElements.ELEMENT_ID).getTextValue();
 
 				if (map.containsKey(context)) {
 					Map<String, QueryTemplate> qtMap = map.get(context);
@@ -94,9 +94,9 @@ public class QueryContainer {
 	 * 
 	 * @param list
 	 */
-	public void append(List<JSONObject> list) {
+	public void append(List<ObjectNode> list) {
 
-		for (JSONObject json : list) {
+		for (ObjectNode json : list) {
 			append(json);
 		}
 

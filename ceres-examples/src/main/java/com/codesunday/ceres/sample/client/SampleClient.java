@@ -5,13 +5,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.BasicConfigurator;
-import org.json.JSONObject;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.client.CeresClient;
 import com.codesunday.ceres.core.constants.QueryElements;
 import com.codesunday.ceres.core.domain.Result;
 
 public class SampleClient {
+
+	private static ObjectMapper mapper = new ObjectMapper();
 
 	public static void main(String[] args) {
 
@@ -24,7 +27,7 @@ public class SampleClient {
 
 		BasicConfigurator.configure();
 
-		JSONObject queryJson = new JSONObject();
+		ObjectNode queryJson = mapper.createObjectNode();
 		queryJson.put(QueryElements.ELEMENT_TABLE, "queries a");
 		queryJson.put(QueryElements.ELEMENT_DROP_ALIAS, "true");
 
@@ -56,17 +59,17 @@ public class SampleClient {
 		Result result = client.find("default", "test5", parameters);
 
 		for (String viewName : result.getViewNames()) {
-			List<JSONObject> list = result.getView(viewName);
+			List<ObjectNode> list = result.getView(viewName);
 
 			System.out.println(viewName + " - " + list.size());
 
 			for (int i = 0; i < displaySize; i++) {
-				System.out.println(list.get(i).toString(3));
+				System.out.println(list.get(i).toString());
 			}
 		}
 
 		for (String viewName : result.getViewNames()) {
-			List<JSONObject> list = result.getView(viewName);
+			List<ObjectNode> list = result.getView(viewName);
 
 			System.out.println(viewName + " - " + list.size());
 		}

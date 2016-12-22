@@ -17,23 +17,29 @@
 
 package com.codesunday.ceres.core.utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.domain.Table;
 
 public class CoreUtils {
 
-	public static Table jsonToTable(List<JSONObject> list) {
+	private static ObjectMapper mapper = new ObjectMapper();
+
+	public static Table jsonToTable(List<ObjectNode> list) {
 
 		Table table = new Table();
 
 		if (list != null && list.size() > 0) {
-			for (JSONObject row : list) {
+			for (ObjectNode row : list) {
 				table.addRow(row);
 			}
 		}
@@ -88,27 +94,36 @@ public class CoreUtils {
 		return match;
 	}
 
-	public static List<Object> concatenate(List<Object> list1, List<Object> list2) {
-		List<Object> returnList = new ArrayList();
+	public static List<JsonNode> concatenate(List<JsonNode> list1, List<JsonNode> list2) {
+		List<JsonNode> returnList = new ArrayList();
 
-		if (list1.size() == 0) {
-			return list2;
-		} else if (list2.size() == 0) {
-			return list1;
-		} else if ((list1.size() > 1 && list2.size() > 1 && list1.size() != list2.size())) {
-			returnList.add(list1.get(0).toString() + list2.get(0).toString());
-		} else if (list1.size() == list2.size()) {
-			for (int i = 0; i < list1.size(); i++) {
-				returnList.add(list1.get(i).toString() + list2.get(i).toString());
+		try {
+
+			if (list1.size() == 0) {
+				return list2;
+			} else if (list2.size() == 0) {
+				return list1;
+			} else if ((list1.size() > 1 && list2.size() > 1 && list1.size() != list2.size())) {
+				returnList.add(mapper.readTree(list1.get(0).toString() + list2.get(0).toString()));
+			} else if (list1.size() == list2.size()) {
+				for (int i = 0; i < list1.size(); i++) {
+					returnList.add(mapper.readTree(list1.get(i).toString() + list2.get(i).toString()));
+				}
+			} else if (list1.size() == 1 && list2.size() > 1) {
+				for (int i = 0; i < list2.size(); i++) {
+					returnList.add(mapper.readTree(list1.get(0).toString() + list2.get(i).toString()));
+				}
+			} else if (list1.size() > 1 && list2.size() == 1) {
+				for (int i = 0; i < list1.size(); i++) {
+					returnList.add(mapper.readTree(list1.get(i).toString() + list2.get(0).toString()));
+				}
 			}
-		} else if (list1.size() == 1 && list2.size() > 1) {
-			for (int i = 0; i < list2.size(); i++) {
-				returnList.add(list1.get(0).toString() + list2.get(i).toString());
-			}
-		} else if (list1.size() > 1 && list2.size() == 1) {
-			for (int i = 0; i < list1.size(); i++) {
-				returnList.add(list1.get(i).toString() + list2.get(0).toString());
-			}
+
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return returnList;

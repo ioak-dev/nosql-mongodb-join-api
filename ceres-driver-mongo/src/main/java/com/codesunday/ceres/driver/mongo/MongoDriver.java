@@ -1,12 +1,14 @@
 package com.codesunday.ceres.driver.mongo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bson.Document;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.constants.Operators;
 import com.codesunday.ceres.core.constants.QueryElements;
@@ -23,6 +25,8 @@ import com.mongodb.client.MongoDatabase;
 
 public class MongoDriver extends DatabaseDriver {
 
+	private static ObjectMapper mapper = new ObjectMapper();
+
 	private MongoClient client;
 	private MongoDatabase db;
 
@@ -30,16 +34,16 @@ public class MongoDriver extends DatabaseDriver {
 
 	private Logger logger = Logger.getLogger(MongoDriver.class);
 
-	public MongoDriver(JSONObject driverProperty, JSONObject databaseInstanceProperty,
+	public MongoDriver(ObjectNode driverProperty, ObjectNode databaseInstanceProperty,
 			ApplicationContext applicationContext) {
 
 		super(driverProperty, databaseInstanceProperty, applicationContext);
 
 		try {
 
-			String dbName = databaseInstanceProperty.optString(Constants.DATABASE);
+			String dbName = databaseInstanceProperty.get(Constants.DATABASE).getTextValue();
 
-			String uri = databaseInstanceProperty.optString(Constants.URI);
+			String uri = databaseInstanceProperty.get(Constants.URI).getTextValue();
 
 			this.client = new MongoClient(new MongoClientURI(uri));
 
@@ -52,12 +56,12 @@ public class MongoDriver extends DatabaseDriver {
 	}
 
 	@Override
-	protected List<JSONObject> findImpl(String table, String alias, TransactionContext transactionContext,
+	protected List<ObjectNode> findImpl(String table, String alias, TransactionContext transactionContext,
 			List<String> conditionlist) {
 
 		long startTime = System.currentTimeMillis();
 
-		List<JSONObject> returnList = new ArrayList();
+		List<ObjectNode> returnList = new ArrayList();
 
 		BasicDBObject query = new BasicDBObject();
 
@@ -72,10 +76,14 @@ public class MongoDriver extends DatabaseDriver {
 		FindIterable<Document> documents = db.getCollection(table).find(query);
 
 		for (Document document : documents) {
-			JSONObject json = new JSONObject();
+			ObjectNode json = mapper.createObjectNode();
 			try {
-				json.put(alias, new JSONObject(document.toJson()));
-			} catch (JSONException e) {
+				json.put(alias, mapper.readTree(document.toJson()));
+			} catch (JsonProcessingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 

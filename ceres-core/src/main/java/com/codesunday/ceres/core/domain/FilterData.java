@@ -26,7 +26,7 @@ import com.codesunday.ceres.core.utils.TextUtils;
 
 public class FilterData {
 	String column;
-	List<Object> values;
+	List<String> values;
 	boolean equality = false;
 
 	int numberOfConstantsToShow;
@@ -44,7 +44,7 @@ public class FilterData {
 		this.column = column;
 	}
 
-	public List<Object> getValues() {
+	public List<String> getValues() {
 		return values;
 	}
 
@@ -56,7 +56,7 @@ public class FilterData {
 
 		valueText = TextUtils.replaceParameters(valueText, parameters);
 
-		List<Object> constants = Arrays.asList(valueText.split(QueryElements.COMMA));
+		List<String> constants = Arrays.asList(valueText.split(QueryElements.COMMA));
 		this.values = constants;
 	}
 

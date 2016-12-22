@@ -23,16 +23,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.exception.CeresException;
 
 public class Result {
 
+	private static ObjectMapper mapper = new ObjectMapper();
+
 	private Logger logger = Logger.getLogger(Result.class);
 
-	private Map<String, List<JSONObject>> views;
+	private Map<String, List<ObjectNode>> views;
 
 	private String context;
 	private String id;
@@ -63,7 +66,7 @@ public class Result {
 		return viewNames;
 	}
 
-	public boolean addView(String viewName, List<JSONObject> view) {
+	public boolean addView(String viewName, List<ObjectNode> view) {
 
 		if (!views.containsKey(viewName)) {
 			viewNames.add(viewName);
@@ -75,7 +78,7 @@ public class Result {
 
 	}
 
-	public boolean addView(List<JSONObject> view) {
+	public boolean addView(List<ObjectNode> view) {
 
 		addView(_DEFAULT, view);
 
@@ -83,7 +86,7 @@ public class Result {
 
 	}
 
-	public List<JSONObject> getView(String viewName) {
+	public List<ObjectNode> getView(String viewName) {
 
 		if (views.containsKey(viewName)) {
 			return views.get(viewName);
@@ -93,7 +96,7 @@ public class Result {
 
 	}
 
-	public List<JSONObject> getView() {
+	public List<ObjectNode> getView() {
 
 		if (views.size() == 1) {
 			return views.get(viewNames.get(0));
@@ -111,13 +114,13 @@ public class Result {
 
 		String queryIdentifierTag = "[" + context + "/" + id + "] ";
 
-		JSONArray jsonToPrint = new JSONArray();
+		ArrayNode jsonToPrint = mapper.createArrayNode();
 
 		for (String viewName : this.getViewNames()) {
 
-			JSONObject json = new JSONObject();
+			ObjectNode json = mapper.createObjectNode();
 
-			List<JSONObject> list = this.getView(viewName);
+			List<ObjectNode> list = this.getView(viewName);
 
 			json.put(VIEW_NAME, viewName);
 			json.put(NUMBER_OF_RECORDS, list.size());
@@ -132,22 +135,22 @@ public class Result {
 					rowsToShow = list.size();
 				}
 
-				JSONArray rows = new JSONArray();
+				ArrayNode rows = mapper.createArrayNode();
 
 				for (int i = 0; i < rowsToShow; i++) {
-					rows.put(list.get(i));
+					rows.add(list.get(i));
 				}
 
 				json.put(DATA, rows);
 			}
 
-			jsonToPrint.put(json);
+			jsonToPrint.add(json);
 		}
 
-		logger.info(queryIdentifierTag + jsonToPrint.toString(3));
+		logger.info(queryIdentifierTag + jsonToPrint.toString());
 	}
 
-	public Map<String, List<JSONObject>> getViews() {
+	public Map<String, List<ObjectNode>> getViews() {
 		return views;
 	}
 

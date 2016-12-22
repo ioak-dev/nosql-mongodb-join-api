@@ -20,13 +20,16 @@ package com.codesunday.ceres.core.processor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.constants.QueryElements;
 import com.codesunday.ceres.core.domain.ApplicationContext;
@@ -42,6 +45,8 @@ import com.codesunday.ceres.core.utils.TextUtils;
 import com.codesunday.proteus.core.client.ProteusClient;
 
 public class QueryProcessor {
+
+	private static ObjectMapper mapper = new ObjectMapper();
 
 	private Logger logger = LogManager.getLogger(QueryProcessor.class);
 
@@ -147,11 +152,11 @@ public class QueryProcessor {
 
 	private void complexFilterInMemoryPre(QueryInstance queryInstance) {
 
-		for (JSONObject filterDefinition : queryInstance.inMemoryComplexFilterPre) {
+		for (JsonNode filterDefinition : queryInstance.inMemoryComplexFilterPre) {
 
 			// long startTime = System.currentTimeMillis();
 
-			Map<String, List<Object>> filterMap = prepareComplexFilter(filterDefinition);
+			Map<String, List<Object>> filterMap = prepareComplexFilter((ObjectNode) filterDefinition);
 
 			String alias = null;
 
@@ -175,11 +180,11 @@ public class QueryProcessor {
 
 	private Table complexFilterInMemoryPost(Table table, QueryInstance queryInstance) {
 
-		for (JSONObject filterDefinition : queryInstance.inMemoryComplexFilterPost) {
+		for (JsonNode filterDefinition : queryInstance.inMemoryComplexFilterPost) {
 
 			// long startTime = System.currentTimeMillis();
 
-			Map<String, List<Object>> filterMap = prepareComplexFilter(filterDefinition);
+			Map<String, List<Object>> filterMap = prepareComplexFilter((ObjectNode) filterDefinition);
 
 			String alias = null;
 
@@ -199,24 +204,24 @@ public class QueryProcessor {
 
 	}
 
-	private Map<String, List<Object>> prepareComplexFilter(JSONObject filterDefinition) {
+	private Map<String, List<Object>> prepareComplexFilter(ObjectNode filterDefinition) {
 
 		Map<String, List<Object>> returnMap = new HashMap();
 		List<Object> filters = new ArrayList();
 
 		String alias = null;
 
-		if (filterDefinition.optString(QueryElements.OPERATOR).equals(QueryElements.OR)) {
+		if (filterDefinition.get(QueryElements.OPERATOR).getTextValue().equals(QueryElements.OR)) {
 			filters.add(QueryElements.OR);
 		} else {
 			filters.add(QueryElements.AND);
 		}
 
-		JSONArray operands = filterDefinition.optJSONArray(QueryElements.OPERAND);
+		ArrayNode operands = (ArrayNode) filterDefinition.get(QueryElements.OPERAND);
 
-		for (int i = 0; i < operands.length(); i++) {
-			if (operands.opt(i) instanceof JSONObject) {
-				Map<String, List<Object>> map = prepareComplexFilter(operands.optJSONObject(i));
+		for (JsonNode operandNode : operands) {
+			if (operandNode.isObject()) {
+				Map<String, List<Object>> map = prepareComplexFilter((ObjectNode) operandNode);
 
 				if (map != null && !map.isEmpty()) {
 					alias = map.keySet().iterator().next();
@@ -224,7 +229,7 @@ public class QueryProcessor {
 				}
 
 			} else {
-				String condition = operands.optString(i);
+				String condition = operandNode.getTextValue();
 				condition = TextUtils.trim(condition, true, QueryElements.EQUAL_TO, QueryElements.NOT_EQUAL_TO,
 						QueryElements.IN, QueryElements.NOT_IN);
 				alias = condition.substring(0, condition.indexOf(QueryElements.DOT));
@@ -419,18 +424,24 @@ public class QueryProcessor {
 
 		if (queryInstance.dropAlias && !queryInstance.projectPresent) {
 
-			List<JSONObject> view = result.getView();
+			List<ObjectNode> view = result.getView();
 
-			List<JSONObject> newview = new ArrayList();
+			List<ObjectNode> newview = new ArrayList();
 
-			for (JSONObject json : view) {
+			for (ObjectNode json : view) {
 
-				JSONObject newObject = new JSONObject();
+				ObjectNode newObject = mapper.createObjectNode();
 
 				for (String alias : queryInstance.aliasToTable.keySet()) {
 					if (json.has(alias)) {
-						for (String key : JSONObject.getNames(json.optJSONObject(alias))) {
-							newObject.put(key, json.optJSONObject(alias).opt(key));
+
+						JsonNode jsonNode = json.get(alias);
+
+						Iterator<String> fields = jsonNode.getFieldNames();
+
+						while (fields.hasNext()) {
+							String key = fields.next();
+							newObject.put(key, json.get(alias).get(key));
 						}
 					}
 				}
@@ -451,8 +462,8 @@ public class QueryProcessor {
 
 			ProteusClient proteus = ProteusClient.getInstance();
 
-			List<List<JSONObject>> views = proteus.transform(joinResult.getRows(),
-					queryInstance.projectionList.toArray(new JSONObject[queryInstance.projectionList.size()]));
+			List<List<ObjectNode>> views = proteus.transform(joinResult.getRows(),
+					queryInstance.projectionList.toArray(new ObjectNode[queryInstance.projectionList.size()]));
 
 			for (int i = 0; i < views.size(); i++) {
 				result.addView(queryInstance.projectionMapKey.get(i), views.get(i));

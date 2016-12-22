@@ -20,18 +20,18 @@ package com.codesunday.ceres.core.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONObject;
+import org.codehaus.jackson.node.ObjectNode;
 
 public class Table {
 
-	private List<JSONObject> rows;
+	private List<ObjectNode> rows;
 
 	public Table() {
 		super();
 		rows = new ArrayList();
 	}
 
-	public void addRow(JSONObject row) {
+	public void addRow(ObjectNode row) {
 		rows.add(row);
 	}
 
@@ -39,11 +39,11 @@ public class Table {
 		return rows.size();
 	}
 
-	public List<JSONObject> getRows() {
+	public List<ObjectNode> getRows() {
 		return rows;
 	}
 
-	public void setRows(List<JSONObject> rows) {
+	public void setRows(List<ObjectNode> rows) {
 		this.rows = rows;
 	}
 

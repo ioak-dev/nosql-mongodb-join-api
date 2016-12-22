@@ -3,7 +3,7 @@ package com.codesunday.ceres.core.driver;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import org.json.JSONObject;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.constants.Constants;
 import com.codesunday.ceres.core.domain.ApplicationContext;
@@ -12,8 +12,8 @@ import com.codesunday.ceres.core.exception.CeresException;
 
 public abstract class DatabaseDriver {
 
-	private JSONObject driverProperty;
-	protected JSONObject databaseInstanceProperty;
+	private ObjectNode driverProperty;
+	protected ObjectNode databaseInstanceProperty;
 
 	protected ApplicationContext applicationContext;
 
@@ -25,7 +25,7 @@ public abstract class DatabaseDriver {
 	 * 
 	 * @param driverProperty
 	 */
-	protected DatabaseDriver(JSONObject driverProperty, JSONObject databaseInstanceProperty,
+	protected DatabaseDriver(ObjectNode driverProperty, ObjectNode databaseInstanceProperty,
 			ApplicationContext applicationContext) {
 		super();
 		this.driverProperty = driverProperty;
@@ -40,12 +40,12 @@ public abstract class DatabaseDriver {
 	 * @param databaseInstanceProperty
 	 * @return
 	 */
-	public static DatabaseDriver getInstance(JSONObject driverProperty, JSONObject databaseInstanceProperty,
+	public static DatabaseDriver getInstance(ObjectNode driverProperty, ObjectNode databaseInstanceProperty,
 			ApplicationContext applicationContext) {
 		DatabaseDriver driver = null;
 		try {
-			driver = (DatabaseDriver) Class.forName(driverProperty.optString(Constants.CLASSPATH))
-					.getConstructor(JSONObject.class, JSONObject.class, ApplicationContext.class)
+			driver = (DatabaseDriver) Class.forName(driverProperty.get(Constants.CLASSPATH).getTextValue())
+					.getConstructor(ObjectNode.class, ObjectNode.class, ApplicationContext.class)
 					.newInstance(new Object[] { driverProperty, databaseInstanceProperty, applicationContext });
 		} catch (ClassNotFoundException e) {
 			throw new CeresException(DRIVER_CLASS_NOT_FOUND, e);
@@ -58,12 +58,12 @@ public abstract class DatabaseDriver {
 
 	}
 
-	public List<JSONObject> find(String table, String alias, TransactionContext transactionContext,
+	public List<ObjectNode> find(String table, String alias, TransactionContext transactionContext,
 			List<String> conditionlist) {
 		return findImpl(table, alias, transactionContext, conditionlist);
 	}
 
-	protected abstract List<JSONObject> findImpl(String table, String alias, TransactionContext transactionContext,
+	protected abstract List<ObjectNode> findImpl(String table, String alias, TransactionContext transactionContext,
 			List<String> conditionlist);
 
 }

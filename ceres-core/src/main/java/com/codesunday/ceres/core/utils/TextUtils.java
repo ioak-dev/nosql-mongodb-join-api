@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONArray;
+import org.codehaus.jackson.node.ArrayNode;
 
 import com.codesunday.ceres.core.constants.QueryElements;
 
@@ -45,8 +45,8 @@ public class TextUtils {
 					}
 
 					parameterValue = sb;
-				} else if (parameterValue instanceof JSONArray) {
-					JSONArray items = (JSONArray) parameterValue;
+				} else if (parameterValue instanceof ArrayNode) {
+					ArrayNode items = (ArrayNode) parameterValue;
 
 					StringBuilder sb = new StringBuilder();
 

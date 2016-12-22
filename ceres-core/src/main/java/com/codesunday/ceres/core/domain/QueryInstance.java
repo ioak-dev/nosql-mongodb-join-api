@@ -23,13 +23,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.constants.QueryElements;
 import com.codesunday.ceres.core.utils.TextUtils;
 
 public class QueryInstance {
+
+	private static ObjectMapper mapper = new ObjectMapper();
 
 	private ApplicationContext applicationContext;
 
@@ -47,14 +51,14 @@ public class QueryInstance {
 
 	public Map<String, List<String>> aliasToInMemoryfilter = new HashMap();
 
-	public List<JSONObject> inMemoryComplexFilterPre = new ArrayList();
-	public List<JSONObject> inMemoryComplexFilterPost = new ArrayList();
+	public List<ObjectNode> inMemoryComplexFilterPre = new ArrayList();
+	public List<ObjectNode> inMemoryComplexFilterPost = new ArrayList();
 
 	public boolean dropAlias = false;
 	public boolean projectPresent = false;
 	public boolean jsonBasedProjection = false;
 
-	public List<JSONObject> projectionList = new ArrayList();
+	public List<ObjectNode> projectionList = new ArrayList();
 	public Map<Integer, String> projectionMapKey = new HashMap();
 
 	// aliaslist is a temporary variable and will not have any data. it remains
@@ -72,8 +76,8 @@ public class QueryInstance {
 		this.queryTemplate = queryTemplate;
 		this.parameters = parameters;
 
-		context = (String) queryTemplate.get(QueryElements.ELEMENT_CONTEXT);
-		id = (String) queryTemplate.get(QueryElements.ELEMENT_ID);
+		context = queryTemplate.get(QueryElements.ELEMENT_CONTEXT).getTextValue();
+		id = queryTemplate.get(QueryElements.ELEMENT_ID).getTextValue();
 
 		uuid = UUID.randomUUID();
 
@@ -91,64 +95,65 @@ public class QueryInstance {
 
 	private void prepareDropAlias() {
 
-		dropAlias = (Boolean) queryTemplate.get(QueryElements.ELEMENT_DROP_ALIAS);
+		dropAlias = queryTemplate.get(QueryElements.ELEMENT_DROP_ALIAS).getBooleanValue();
 
 	}
 
 	private void prepareProject() {
 
-		List<Object> list = (List<Object>) queryTemplate.get(QueryElements.ELEMENT_PROJECT);
+		if (queryTemplate.projectPresent) {
 
-		if (list != null && list.size() > 0) {
+			ArrayNode list = (ArrayNode) queryTemplate.get(QueryElements.ELEMENT_PROJECT);
 
-			Map<String, JSONObject> projectionMap = new HashMap();
+			if (list != null && list.size() > 0) {
 
-			jsonBasedProjection = queryTemplate.jsonBasedProjection;
-			projectPresent = queryTemplate.projectPresent;
+				Map<String, ObjectNode> projectionMap = new HashMap();
 
-			if (projectPresent) {
-				if (jsonBasedProjection) {
-					for (Object obj : list) {
-						if (obj instanceof String) {
+				jsonBasedProjection = queryTemplate.jsonBasedProjection;
+				projectPresent = queryTemplate.projectPresent;
 
-							String templateName = (String) obj;
+				if (projectPresent) {
+					if (jsonBasedProjection) {
+						for (JsonNode obj : list) {
+							if (obj.isTextual()) {
 
-							projectionMap.put(templateName,
-									applicationContext.templateContainer.getProjectTemplate(templateName));
+								String templateName = obj.getTextValue();
 
-						} else if (obj instanceof JSONObject) {
+								projectionMap.put(templateName,
+										applicationContext.templateContainer.getProjectTemplate(templateName));
 
-							JSONObject json = (JSONObject) obj;
+							} else if (obj.isObject()) {
 
-							projectionMap.put(json.optString(QueryElements._TEMPLATE), json);
-						}
-					}
-				} else {
-
-					JSONObject projectObject = new JSONObject();
-
-					for (Object obj : list) {
-						if (obj instanceof String) {
-							String fieldPair[] = ((String) obj).split(QueryElements.AS_SPACE);
-
-							if (fieldPair.length == 2) {
-								projectObject.put(fieldPair[1], fieldPair[0]);
-							} else {
-								projectObject.put(fieldPair[0], fieldPair[0]);
+								projectionMap.put(obj.get(QueryElements._TEMPLATE).getTextValue(), (ObjectNode) obj);
 							}
 						}
+					} else {
+
+						ObjectNode projectObject = mapper.createObjectNode();
+
+						for (JsonNode obj : list) {
+							if (obj.isTextual()) {
+								String fieldPair[] = (obj.getTextValue()).split(QueryElements.AS_SPACE);
+
+								if (fieldPair.length == 2) {
+									projectObject.put(fieldPair[1], fieldPair[0]);
+								} else {
+									projectObject.put(fieldPair[0], fieldPair[0]);
+								}
+							}
+						}
+
+						projectionMap.put(QueryElements._DEFAULT, projectObject);
 					}
-
-					projectionMap.put(QueryElements._DEFAULT, projectObject);
 				}
-			}
 
-			int index = 0;
+				int index = 0;
 
-			for (String key : projectionMap.keySet()) {
-				projectionMapKey.put(index, key);
-				projectionList.add(projectionMap.get(key));
-				index = index + 1;
+				for (String key : projectionMap.keySet()) {
+					projectionMapKey.put(index, key);
+					projectionList.add(projectionMap.get(key));
+					index = index + 1;
+				}
 			}
 		}
 
@@ -156,11 +161,13 @@ public class QueryInstance {
 
 	private void prepareJoinOrder() {
 
-		List<String> list = (List<String>) queryTemplate.get(QueryElements.ELEMENT_JOIN);
+		ArrayNode list = (ArrayNode) queryTemplate.get(QueryElements.ELEMENT_JOIN);
 
 		if (list != null) {
 
-			for (String item : list) {
+			for (JsonNode itemNode : list) {
+
+				String item = itemNode.getTextValue();
 
 				List<String> aliasList = new ArrayList();
 
@@ -194,9 +201,12 @@ public class QueryInstance {
 
 	private void prepareTable() {
 
-		List<String> list = (List) queryTemplate.get(QueryElements.ELEMENT_TABLE);
+		ArrayNode list = (ArrayNode) queryTemplate.get(QueryElements.ELEMENT_TABLE);
 
-		for (String item : list) {
+		for (JsonNode itemNode : list) {
+
+			String item = itemNode.getTextValue();
+
 			String setArray[] = item.split(QueryElements.SPACE);
 			aliasToTable.put(setArray[1], setArray[0]);
 			tableToAlias.put(setArray[0], setArray[1]);
@@ -208,11 +218,13 @@ public class QueryInstance {
 
 	private void prepareFilterInDb() {
 
-		List<String> list = (List<String>) queryTemplate.get(QueryElements.ELEMENT_FILTER_IN_DB);
+		ArrayNode list = (ArrayNode) queryTemplate.get(QueryElements.ELEMENT_FILTER_IN_DB);
 
 		if (list != null) {
 
-			for (String item : list) {
+			for (JsonNode itemNode : list) {
+
+				String item = itemNode.getTextValue();
 
 				item = TextUtils.replaceParameters(item, parameters);
 
@@ -232,15 +244,15 @@ public class QueryInstance {
 
 	private void prepareFilterInMemory() {
 
-		List<String> list = (List<String>) queryTemplate.get(QueryElements.ELEMENT_FILTER_IN_MEMORY);
+		ArrayNode list = (ArrayNode) queryTemplate.get(QueryElements.ELEMENT_FILTER_IN_MEMORY);
 
 		if (list != null) {
 
-			for (Object obj : list) {
+			for (JsonNode obj : list) {
 
-				if (obj instanceof String) {
+				if (obj.isTextual()) {
 
-					String item = (String) obj;
+					String item = obj.getTextValue();
 
 					// item = StringUtils.replaceParameters(item, parameters);
 
@@ -253,14 +265,12 @@ public class QueryInstance {
 						itemlist.add(item);
 						aliasToInMemoryfilter.put(alias, itemlist);
 					}
-				} else if (obj instanceof JSONObject) {
+				} else if (obj.isObject()) {
 
-					JSONObject json = (JSONObject) obj;
-
-					if (containsMultipleTableFilters(json, null)) {
-						inMemoryComplexFilterPost.add(json);
+					if (containsMultipleTableFilters((ObjectNode) obj, null)) {
+						inMemoryComplexFilterPost.add((ObjectNode) obj);
 					} else {
-						inMemoryComplexFilterPre.add(json);
+						inMemoryComplexFilterPre.add((ObjectNode) obj);
 					}
 				}
 			}
@@ -268,19 +278,17 @@ public class QueryInstance {
 
 	}
 
-	private boolean containsMultipleTableFilters(JSONObject input, String startingTableAlias) {
+	private boolean containsMultipleTableFilters(ObjectNode input, String startingTableAlias) {
 
 		boolean outcome = false;
 
-		JSONArray operands = input.optJSONArray(QueryElements.OPERAND);
+		ArrayNode operands = (ArrayNode) input.get(QueryElements.OPERAND);
 
-		for (int i = 0; i < operands.length(); i++) {
+		for (JsonNode operandNode : operands) {
 
-			Object obj = operands.opt(i);
+			if (operandNode.isTextual()) {
 
-			if (obj instanceof String) {
-
-				String operand = (String) obj;
+				String operand = operandNode.getTextValue();
 
 				String currentAlias = operand.substring(0, operand.indexOf(QueryElements.DOT));
 
@@ -290,8 +298,8 @@ public class QueryInstance {
 					startingTableAlias = currentAlias;
 				}
 
-			} else if (obj instanceof JSONObject) {
-				outcome = containsMultipleTableFilters((JSONObject) obj, startingTableAlias);
+			} else if (operandNode.isObject()) {
+				outcome = containsMultipleTableFilters((ObjectNode) operandNode, startingTableAlias);
 			}
 
 			if (outcome) {
@@ -308,11 +316,11 @@ public class QueryInstance {
 		return parameters;
 	}
 
-	private KeyValuePair searchForAlternateKeys(JSONObject json, String... possibleKeys) {
+	private KeyValuePair searchForAlternateKeys(ObjectNode json, String... possibleKeys) {
 
 		for (String key : possibleKeys) {
 			if (json.has(key)) {
-				return new KeyValuePair(key, json.opt(key));
+				return new KeyValuePair(key, json.get(key));
 			}
 		}
 

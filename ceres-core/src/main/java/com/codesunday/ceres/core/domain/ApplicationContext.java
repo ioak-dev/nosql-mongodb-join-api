@@ -21,8 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.logging.LogCapsule;
 
@@ -36,8 +37,8 @@ public class ApplicationContext {
 
 	private static final String VALUE = "value";
 
-	private Map<String, Map<String, JSONObject>> map = new HashMap();
-	private static Map<String, Map<String, JSONObject>> globalMap = new HashMap();
+	private Map<String, Map<String, ObjectNode>> map = new HashMap();
+	private static Map<String, Map<String, ObjectNode>> globalMap = new HashMap();
 
 	public QueryContainer queryContainer;
 	public TemplateContainer templateContainer;
@@ -50,7 +51,7 @@ public class ApplicationContext {
 	 * 
 	 * @param file
 	 */
-	private ApplicationContext(List<JSONObject> list) {
+	private ApplicationContext(List<ObjectNode> list) {
 
 		this();
 
@@ -70,7 +71,7 @@ public class ApplicationContext {
 	 * @param directoryName
 	 * @return
 	 */
-	public static ApplicationContext getInstance(List<JSONObject> list) {
+	public static ApplicationContext getInstance(List<ObjectNode> list) {
 
 		ApplicationContext appContext = new ApplicationContext(list);
 
@@ -95,7 +96,7 @@ public class ApplicationContext {
 	 * 
 	 * @param json
 	 */
-	public void append(JSONObject json) {
+	public void append(ObjectNode json) {
 
 		if (json != null) {
 
@@ -103,24 +104,24 @@ public class ApplicationContext {
 			String key = null;
 
 			if (json.has(CONTEXT)) {
-				context = json.optString(CONTEXT);
+				context = json.get(CONTEXT).getTextValue();
 			} else if (json.has(TYPE)) {
-				context = json.optString(TYPE);
+				context = json.get(TYPE).getTextValue();
 			}
 
 			if (json.has(KEY)) {
-				key = json.optString(KEY);
+				key = json.get(KEY).getTextValue();
 			} else {
 				// ERROR
 			}
 
 			if (map.containsKey(context)) {
-				Map<String, JSONObject> queryMap = map.get(context);
+				Map<String, ObjectNode> queryMap = map.get(context);
 
 				queryMap.put(context, json);
 
 			} else {
-				Map<String, JSONObject> queryMap = new HashMap();
+				Map<String, ObjectNode> queryMap = new HashMap();
 
 				queryMap.put(key, json);
 
@@ -136,9 +137,9 @@ public class ApplicationContext {
 	 * 
 	 * @param json
 	 */
-	public void append(List<JSONObject> list) {
+	public void append(List<ObjectNode> list) {
 
-		for (JSONObject json : list) {
+		for (ObjectNode json : list) {
 			append(json);
 		}
 
@@ -150,10 +151,10 @@ public class ApplicationContext {
 	 * 
 	 * @param json
 	 */
-	public void append(JSONArray array) {
+	public void append(ArrayNode array) {
 
-		for (int i = 0; i < array.length(); i++) {
-			append(array.optJSONObject(i));
+		for (JsonNode node : array) {
+			append((ObjectNode) node);
 		}
 
 	}
@@ -163,7 +164,7 @@ public class ApplicationContext {
 	 * 
 	 * @param json
 	 */
-	public static void appendGlobalScope(JSONObject json) {
+	public static void appendGlobalScope(ObjectNode json) {
 
 		if (json != null) {
 
@@ -171,24 +172,24 @@ public class ApplicationContext {
 			String key = null;
 
 			if (json.has(CONTEXT)) {
-				context = json.optString(CONTEXT);
+				context = json.get(CONTEXT).getTextValue();
 			} else if (json.has(TYPE)) {
-				context = json.optString(TYPE);
+				context = json.get(TYPE).getTextValue();
 			}
 
 			if (json.has(KEY)) {
-				key = json.optString(KEY);
+				key = json.get(KEY).getTextValue();
 			} else {
 				// ERROR
 			}
 
 			if (globalMap.containsKey(context)) {
-				Map<String, JSONObject> queryMap = globalMap.get(context);
+				Map<String, ObjectNode> queryMap = globalMap.get(context);
 
 				queryMap.put(key, json);
 
 			} else {
-				Map<String, JSONObject> queryMap = new HashMap();
+				Map<String, ObjectNode> queryMap = new HashMap();
 
 				queryMap.put(key, json);
 
@@ -204,10 +205,10 @@ public class ApplicationContext {
 	 * 
 	 * @param json
 	 */
-	public static void appendGlobalScope(JSONArray array) {
+	public static void appendGlobalScope(ArrayNode array) {
 
-		for (int i = 0; i < array.length(); i++) {
-			appendGlobalScope(array.optJSONObject(i));
+		for (JsonNode node : array) {
+			appendGlobalScope((ObjectNode) node);
 		}
 
 	}
@@ -219,14 +220,14 @@ public class ApplicationContext {
 	 * @param key
 	 * @return
 	 */
-	public JSONObject getValue(String context, String key) {
+	public ObjectNode getValue(String context, String key) {
 
-		JSONObject json = null;
+		ObjectNode json = null;
 
 		if (map.containsKey(context) && map.get(context).containsKey(key)) {
-			json = map.get(context).get(key).optJSONObject(VALUE);
+			json = (ObjectNode) map.get(context).get(key).get(VALUE);
 		} else if (globalMap.containsKey(context) && globalMap.get(context).containsKey(key)) {
-			json = globalMap.get(context).get(key).optJSONObject(VALUE);
+			json = (ObjectNode) globalMap.get(context).get(key).get(VALUE);
 		}
 
 		return json;
@@ -245,19 +246,19 @@ public class ApplicationContext {
 		String returnValue = null;
 
 		if (map.containsKey(context) && map.get(context).containsKey(key)) {
-			JSONObject json = map.get(context).get(key).optJSONObject(VALUE);
+			ObjectNode json = (ObjectNode) map.get(context).get(key).get(VALUE);
 
 			if (json.has(value)) {
-				returnValue = json.optString(value);
+				returnValue = json.get(value).getTextValue();
 			}
 
 		}
 
 		if (returnValue == null && globalMap.containsKey(context) && globalMap.get(context).containsKey(key)) {
-			JSONObject json = globalMap.get(context).get(key).optJSONObject(VALUE);
+			ObjectNode json = (ObjectNode) globalMap.get(context).get(key).get(VALUE);
 
 			if (json.has(value)) {
-				returnValue = json.optString(value);
+				returnValue = json.get(value).getTextValue();
 			}
 
 		}
@@ -278,20 +279,20 @@ public class ApplicationContext {
 		int returnValue = -1;
 
 		if (map.containsKey(context) && map.get(context).containsKey(key)) {
-			JSONObject json = map.get(context).get(key).optJSONObject(VALUE);
+			ObjectNode json = (ObjectNode) map.get(context).get(key).get(VALUE);
 
 			if (json.has(value)) {
-				returnValue = json.optInt(value, 0);
+				returnValue = json.get(value).getIntValue();
 			}
 
 		}
 
 		if (returnValue < 0 && globalMap.containsKey(context) && globalMap.get(context).containsKey(key)) {
-			JSONObject json = globalMap.get(context).get(key).optJSONObject(VALUE);
+			ObjectNode json = (ObjectNode) globalMap.get(context).get(key).get(VALUE);
 
 			if (json.has(value)) {
-				returnValue = json.optInt(value, 0);
-			} else{
+				returnValue = json.get(value).getIntValue();
+			} else {
 				returnValue = 0;
 			}
 
@@ -313,10 +314,10 @@ public class ApplicationContext {
 		boolean returnValue = false;
 
 		if (map.containsKey(context) && map.get(context).containsKey(key)) {
-			JSONObject json = map.get(context).get(key).optJSONObject(VALUE);
+			ObjectNode json = (ObjectNode) map.get(context).get(key).get(VALUE);
 
 			if (json.has(value)) {
-				returnValue = json.optBoolean(value, false);
+				returnValue = json.get(value).getBooleanValue();
 			}
 
 		}
@@ -324,7 +325,7 @@ public class ApplicationContext {
 		return returnValue;
 	}
 
-	public static Map<String, Map<String, JSONObject>> getGlobalMap() {
+	public static Map<String, Map<String, ObjectNode>> getGlobalMap() {
 		return globalMap;
 	}
 
@@ -332,7 +333,7 @@ public class ApplicationContext {
 		globalMap.clear();
 	}
 
-	public Map<String, Map<String, JSONObject>> getMap() {
+	public Map<String, Map<String, ObjectNode>> getMap() {
 		return map;
 	}
 

@@ -22,8 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.domain.ApplicationContext;
 import com.codesunday.ceres.core.domain.QueryContainer;
@@ -47,8 +48,8 @@ public class CeresClient {
 		this.applicationContext.queryContainer = new QueryContainer();
 		this.applicationContext.templateContainer = new TemplateContainer();
 
-		JSONObject driverProperty = applicationContext.getValue("database-driver", databaseDriver);
-		JSONObject databaseInstanceProperty = applicationContext.getValue("database-instance", databaseName);
+		ObjectNode driverProperty = applicationContext.getValue("database-driver", databaseDriver);
+		ObjectNode databaseInstanceProperty = applicationContext.getValue("database-instance", databaseName);
 
 		// Initialize logging settings
 
@@ -81,7 +82,7 @@ public class CeresClient {
 
 	}
 
-	public static CeresClient getInstance(List<JSONObject> list, String dbDriver, String dbName) {
+	public static CeresClient getInstance(List<ObjectNode> list, String dbDriver, String dbName) {
 
 		ApplicationContext applicationContext = ApplicationContext.getInstance(list);
 
@@ -101,48 +102,48 @@ public class CeresClient {
 
 	}
 
-	private static List<JSONObject> loadPropertiesFromPath(String appContextPath) {
+	private static List<ObjectNode> loadPropertiesFromPath(String appContextPath) {
 
 		File file = new File(appContextPath);
 
-		List<JSONObject> list = FileUtils.read(file);
+		List<ObjectNode> list = FileUtils.read(file);
 
 		return list;
 	}
 
 	public void addQueriesFromFilesystem(String queryPath) {
 
-		List<JSONObject> queries = readQueriesFromFileSystem(queryPath);
+		List<ObjectNode> queries = readQueriesFromFileSystem(queryPath);
 
 		applicationContext.queryContainer.append(queries);
 
 	}
 
-	public void addQueries(List<JSONObject> queries) {
+	public void addQueries(List<ObjectNode> queries) {
 
 		applicationContext.queryContainer.append(queries);
 
 	}
 
-	public void addQueries(JSONArray queries) {
+	public void addQueries(ArrayNode queries) {
 
-		List<JSONObject> list = new ArrayList();
+		List<ObjectNode> list = new ArrayList();
 
-		for (int i = 0; i < queries.length(); i++) {
-			list.add(queries.optJSONObject(i));
+		for (JsonNode node : queries) {
+			list.add((ObjectNode) node);
 		}
 
 		applicationContext.queryContainer.append(list);
 
 	}
 
-	public void addQueries(JSONObject query) {
+	public void addQueries(ObjectNode query) {
 
 		applicationContext.queryContainer.append(query);
 
 	}
 
-	public void addQueriesFromDatabase(JSONObject queryJson) {
+	public void addQueriesFromDatabase(ObjectNode queryJson) {
 
 		Result result = find(queryJson, null);
 
@@ -150,7 +151,7 @@ public class CeresClient {
 
 	}
 
-	public void addQueriesFromDatabase(JSONObject queryJson, Map<String, Object> parameters) {
+	public void addQueriesFromDatabase(ObjectNode queryJson, Map<String, Object> parameters) {
 
 		Result result = find(queryJson, parameters);
 
@@ -160,13 +161,13 @@ public class CeresClient {
 
 	public void addTemplatesFromFilesystem(String queryPath) {
 
-		List<JSONObject> templates = readQueriesFromFileSystem(queryPath);
+		List<ObjectNode> templates = readQueriesFromFileSystem(queryPath);
 
 		applicationContext.templateContainer.append(templates);
 
 	}
 
-	public void addTemplatesFromDatabase(JSONObject queryJson) {
+	public void addTemplatesFromDatabase(ObjectNode queryJson) {
 
 		Result result = find(queryJson, null);
 
@@ -174,7 +175,7 @@ public class CeresClient {
 
 	}
 
-	public void addTemplatesFromDatabase(JSONObject queryJson, Map<String, Object> parameters) {
+	public void addTemplatesFromDatabase(ObjectNode queryJson, Map<String, Object> parameters) {
 
 		Result result = find(queryJson, parameters);
 
@@ -182,10 +183,10 @@ public class CeresClient {
 
 	}
 
-	private List<JSONObject> readQueriesFromFileSystem(String queryPath) {
+	private List<ObjectNode> readQueriesFromFileSystem(String queryPath) {
 
 		List<File> files = FileUtils.listf(queryPath);
-		List<JSONObject> list = FileUtils.read(files);
+		List<ObjectNode> list = FileUtils.read(files);
 
 		return list;
 	}
@@ -201,7 +202,7 @@ public class CeresClient {
 
 	}
 
-	public Result find(JSONObject queryJson, Map<String, Object> parameters) {
+	public Result find(ObjectNode queryJson, Map<String, Object> parameters) {
 
 		QueryTemplate queryTemplate = new QueryTemplate(queryJson);
 		return clientImpl.find(queryTemplate, parameters);

@@ -24,11 +24,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ObjectNode;
 
 public class FileUtils {
+
+	private static ObjectMapper mapper = new ObjectMapper();
 
 	/**
 	 * Read the content of a file pointed by the input absolute file path. And
@@ -91,9 +94,9 @@ public class FileUtils {
 	 * @param files
 	 * @return
 	 */
-	public static List<JSONObject> read(List<File> files) {
+	public static List<ObjectNode> read(List<File> files) {
 
-		List<JSONObject> list = new ArrayList();
+		List<ObjectNode> list = new ArrayList();
 
 		for (File file : files) {
 
@@ -111,9 +114,9 @@ public class FileUtils {
 	 * @param file
 	 * @return
 	 */
-	public static List<JSONObject> read(File file) {
+	public static List<ObjectNode> read(File file) {
 
-		List<JSONObject> list = new ArrayList();
+		List<ObjectNode> list = new ArrayList();
 
 		try {
 			String fileContent = FileUtils.readFile(file.getAbsolutePath());
@@ -121,23 +124,20 @@ public class FileUtils {
 			if (fileContent != null && !fileContent.isEmpty()) {
 				if (fileContent.startsWith("{")) {
 
-					JSONObject json = new JSONObject(fileContent);
+					ObjectNode json = (ObjectNode) mapper.readTree(fileContent);
 					list.add(json);
 
 				} else if (fileContent.startsWith("[")) {
 
-					JSONArray jsonArray = new JSONArray(fileContent);
+					ArrayNode jsonArray = (ArrayNode) mapper.readTree(fileContent);
 
-					for (int i = 0; i < jsonArray.length(); i++) {
-						JSONObject json = jsonArray.optJSONObject(i);
-						list.add(json);
+					for (JsonNode node : jsonArray) {
+						list.add((ObjectNode) node);
 					}
 				}
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 

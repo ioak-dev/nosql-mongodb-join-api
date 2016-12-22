@@ -2,10 +2,8 @@ package com.codesunday.ceres.examples;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 
 import com.codesunday.ceres.core.client.CeresClient;
-import com.codesunday.ceres.core.constants.QueryElements;
 
 public class ExampleMain {
 
@@ -69,15 +67,15 @@ public class ExampleMain {
 		logger.info(
 				"This example uses queries from database. To see the demo of loading from file system, call loadFromFileSystem() instead of loadFromDatabase()");
 
-		JSONObject queryJsonQuery = new JSONObject();
-		queryJsonQuery.put(QueryElements.ELEMENT_TABLE, "queries a");
-		queryJsonQuery.put(QueryElements.ELEMENT_DROP_ALIAS, "true");
-		client.addQueriesFromDatabase(queryJsonQuery);
-
-		JSONObject templateJsonQuery = new JSONObject();
-		queryJsonQuery.put(QueryElements.ELEMENT_TABLE, "queries a");
-		queryJsonQuery.put(QueryElements.ELEMENT_DROP_ALIAS, "true");
-		client.addTemplatesFromDatabase(templateJsonQuery);
+		// JSONObject queryJsonQuery = new JSONObject();
+		// queryJsonQuery.put(QueryElements.ELEMENT_TABLE, "queries a");
+		// queryJsonQuery.put(QueryElements.ELEMENT_DROP_ALIAS, "true");
+		// client.addQueriesFromDatabase(queryJsonQuery);
+		//
+		// JSONObject templateJsonQuery = new JSONObject();
+		// queryJsonQuery.put(QueryElements.ELEMENT_TABLE, "queries a");
+		// queryJsonQuery.put(QueryElements.ELEMENT_DROP_ALIAS, "true");
+		// client.addTemplatesFromDatabase(templateJsonQuery);
 
 	}
 

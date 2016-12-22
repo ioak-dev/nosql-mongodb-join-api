@@ -19,7 +19,7 @@ package com.codesunday.ceres.core.client;
 
 import java.util.Map;
 
-import org.json.JSONObject;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.domain.ApplicationContext;
 import com.codesunday.ceres.core.domain.QueryTemplate;
@@ -29,8 +29,8 @@ import com.codesunday.ceres.core.processor.QueryProcessor;
 
 public class CeresClientImpl {
 
-	private JSONObject driverProperty;
-	private JSONObject databaseInstanceProperty;
+	private ObjectNode driverProperty;
+	private ObjectNode databaseInstanceProperty;
 
 	private ApplicationContext applicationContext;
 
@@ -40,8 +40,8 @@ public class CeresClientImpl {
 	 * @param applicationContext
 	 */
 
-	public CeresClientImpl(ApplicationContext applicationContext, JSONObject driverProperty,
-			JSONObject databaseInstanceProperty) {
+	public CeresClientImpl(ApplicationContext applicationContext, ObjectNode driverProperty,
+			ObjectNode databaseInstanceProperty) {
 		super();
 		this.driverProperty = driverProperty;
 		this.databaseInstanceProperty = databaseInstanceProperty;

@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.constants.QueryElements;
 import com.codesunday.ceres.core.exception.CeresException;
@@ -31,7 +31,7 @@ public class TemplateContainer {
 
 	private static Logger logger = Logger.getLogger(QueryContainer.class);
 
-	private Map<String, JSONObject> map;
+	private Map<String, ObjectNode> map;
 
 	private static final String TEMPLATE_NAME_NOT_DEFINED = "_template tag not defined. this is used to identify the template";
 	private static final String TEMPLATE_NAME_NOT_VALID = "template identifier tag should end with .json";
@@ -55,7 +55,7 @@ public class TemplateContainer {
 	 * 
 	 * @param json
 	 */
-	public void append(JSONObject json) {
+	public void append(ObjectNode json) {
 
 		if (json != null) {
 
@@ -97,9 +97,9 @@ public class TemplateContainer {
 	 * 
 	 * @param list
 	 */
-	public void append(List<JSONObject> list) {
+	public void append(List<ObjectNode> list) {
 
-		for (JSONObject json : list) {
+		for (ObjectNode json : list) {
 			append(json);
 		}
 
@@ -112,7 +112,7 @@ public class TemplateContainer {
 	 * @param id
 	 * @return
 	 */
-	public JSONObject getProjectTemplate(String templateName) {
+	public ObjectNode getProjectTemplate(String templateName) {
 
 		if (map.containsKey(templateName)) {
 			return map.get(templateName);
@@ -127,11 +127,11 @@ public class TemplateContainer {
 		return map.toString();
 	}
 
-	private KeyValuePair searchForAlternateKeys(JSONObject json, String... possibleKeys) {
+	private KeyValuePair searchForAlternateKeys(ObjectNode json, String... possibleKeys) {
 
 		for (String key : possibleKeys) {
 			if (json.has(key)) {
-				return new KeyValuePair(key, json.opt(key));
+				return new KeyValuePair(key, json.get(key).getTextValue());
 			}
 		}
 

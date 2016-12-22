@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.json.JSONObject;
+import org.codehaus.jackson.node.ObjectNode;
 
 import com.codesunday.ceres.core.driver.DatabaseDriver;
 import com.codesunday.ceres.core.logging.LogCapsule;
@@ -51,7 +51,7 @@ public class TransactionContext {
 		this.logCapsule = applicationContext.logCapsule;
 	}
 
-	public static TransactionContext getInstance(JSONObject driverProperty, JSONObject databaseInstanceProperty,
+	public static TransactionContext getInstance(ObjectNode driverProperty, ObjectNode databaseInstanceProperty,
 			ApplicationContext applicationContext) {
 
 		DatabaseDriver driver = DatabaseDriver.getInstance(driverProperty, databaseInstanceProperty,
